@@ -7,7 +7,7 @@ The shadowing technique is a language learning method that involves repeating wh
 - Record your voice repeating what you've heard.
 
 ## Example
-<img src="./static/gif/app-intro.gif" />
+<img src="./assets/gif/app-intro.gif" />
 
 ## To run the back-end
 Change the HOST var in "main.py" file: <br>
