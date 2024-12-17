@@ -10,6 +10,8 @@ The shadowing technique is a language learning method that involves repeating wh
 <img src="./assets/gif/app-intro.gif" />
 
 ## To run the back-end
+First you need to install FFmpeg on your machine: [FFmpeg](https://www.ffmpeg.org/download.html) <br>
+
 Change the HOST var in "main.py" file: <br>
 ```HOST = <your network IP goes here>```
 
