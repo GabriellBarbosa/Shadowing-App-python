@@ -20,3 +20,5 @@ Now you can run: <br>
 ```python main.py```
 
 When you're using the App make sure that you are connected to the same internet connection as the server.
+
+Run the App: [Shadowing-App-react-native](https://github.com/GabriellBarbosa/Shadowing-App-react-native)
