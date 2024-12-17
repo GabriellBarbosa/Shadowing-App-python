@@ -10,7 +10,7 @@ The shadowing technique is a language learning method that involves repeating wh
 <img src="./static/gif/app-intro.gif" />
 
 ## To run the back-end
-change the HOST var in "main.py" file: <br>
+Change the HOST var in "main.py" file: <br>
 ```HOST = <your network IP goes here>```
 
 Install the dependecies: <br>
