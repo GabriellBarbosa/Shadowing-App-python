@@ -1,5 +1,4 @@
 from flask import Flask, jsonify, request
-from flask_cors import CORS
 from pydub import AudioSegment
 from pydub.silence import split_on_silence
 import os
@@ -7,7 +6,6 @@ import io
 import base64
 
 app = Flask(__name__)
-CORS(app, resources={r'/*': {'origins': '*'}})
 HOST = '192.168.18.6'
 PORT = 5000
 
