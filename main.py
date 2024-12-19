@@ -1,6 +1,7 @@
 from flask import Flask, jsonify, request
 from pydub import AudioSegment
 from pydub.silence import split_on_silence
+from pytubefix import YouTube
 import os
 import io
 import base64
@@ -8,27 +9,38 @@ import base64
 app = Flask(__name__)
 HOST = '192.168.18.6'
 PORT = 5000
-
 CHUNK_MAX_DURATION_SEC = 6
 
-@app.route('/upload', methods=['POST'])
-def upload_audio():
-    chunks = create_original_chunks(request.files['file'])
-    folder = request.files['file'].filename.split('.')[0]
-    save(chunks, folder)
+user_data = "CgsyUHkwSWZQTHRsSSjfkJG7BjIKCgJCUhIEGgAgTQ%3D%3D"
+po_token = "MnTK9tGlwPKGdsrO5NQV4M-N48HTWklLmvpMvL5jGjA1amqO0Hep0ofXoH_Fm8Kzl8DwZyrkHWHl9OuG95_qxHGiie_6reqcVR5WI7o4Yw8K0mDnxhM_JCen6diO7u-q2ANAiv-CJD47061lwjvWn4eqWDSTbg=="
+
+@app.route('/yt', methods=['POST'])
+def upload_audio_from_yt():
+    yt = YouTube(
+        request.json['url'], 
+        use_po_token=True, 
+        po_token_verifier=(user_data, po_token))
+    ys = yt.streams.get_audio_only()
+    path = ys.download(output_path=".//temp")
+    audio = AudioSegment.from_file(path)
+    chunks = split_in_chunks(audio)
+    save(chunks, ys.title)
+    os.remove(path)
     return jsonify()
 
-def create_original_chunks(raw_audio_file):
-    audio = AudioSegment.from_wav(raw_audio_file)
-    chunks = split_on_silence(audio, 
-        min_silence_len=400,
-        silence_thresh=-40
-    )
-    small_chunks = break_large(chunks)
+def split_in_chunks(audio):
+    large_chunks = split_in_large_chunks(audio)
+    small_chunks = split_in_small_chunks(large_chunks)
     best_size_chunks = join_really_small_chunks(small_chunks)
     return best_size_chunks
 
-def break_large(chunks):
+def split_in_large_chunks(audio):
+    return split_on_silence(audio, 
+        min_silence_len=400,
+        silence_thresh=-40
+    )
+
+def split_in_small_chunks(chunks):
     result = []
     for chunk in chunks:
         if (chunk.duration_seconds >= CHUNK_MAX_DURATION_SEC):
