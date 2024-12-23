@@ -2,6 +2,7 @@ from flask import Flask, jsonify, request
 from pydub import AudioSegment
 from pydub.silence import split_on_silence
 from pytubefix import YouTube
+from slugify import slugify
 import os
 import io
 import base64
@@ -24,7 +25,8 @@ def upload_audio_from_yt():
     path = ys.download(output_path=".//temp")
     audio = AudioSegment.from_file(path)
     chunks = split_in_chunks(audio)
-    save(chunks, ys.title)
+    folder_name = ''.join(e for e in ys.title if e.isalnum() or e.isspace())
+    save(chunks, folder_name)
     os.remove(path)
     return jsonify()
 
