@@ -26,7 +26,7 @@ def upload_audio_from_yt():
     audio = AudioSegment.from_file(path)
     chunks = split_in_chunks(audio)
     folder_name = ''.join(e for e in ys.title if e.isalnum() or e.isspace())
-    save(chunks, folder_name)
+    save(chunks, folder_name.strip())
     os.remove(path)
     return jsonify()
 
