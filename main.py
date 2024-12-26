@@ -2,7 +2,7 @@ from flask import Flask, jsonify, request
 from pydub import AudioSegment
 from pydub.silence import split_on_silence
 from pytubefix import YouTube
-from slugify import slugify
+from audio_splitter_module import AudioSplitter
 import os
 import io
 import base64
@@ -10,7 +10,6 @@ import base64
 app = Flask(__name__)
 HOST = '192.168.18.6'
 PORT = 5000
-CHUNK_MAX_DURATION_SEC = 6
 
 user_data = "CgsyUHkwSWZQTHRsSSjfkJG7BjIKCgJCUhIEGgAgTQ%3D%3D"
 po_token = "MnTK9tGlwPKGdsrO5NQV4M-N48HTWklLmvpMvL5jGjA1amqO0Hep0ofXoH_Fm8Kzl8DwZyrkHWHl9OuG95_qxHGiie_6reqcVR5WI7o4Yw8K0mDnxhM_JCen6diO7u-q2ANAiv-CJD47061lwjvWn4eqWDSTbg=="
@@ -24,55 +23,19 @@ def upload_audio_from_yt():
     ys = yt.streams.get_audio_only()
     path = ys.download(output_path=".//temp")
     audio = AudioSegment.from_file(path)
-    chunks = split_in_chunks(audio)
+
+    ## split audio in chunks
+    splitter = AudioSplitter(audio)
+    chunks = splitter.execute()
+    
     folder_name = ''.join(e for e in ys.title if e.isalnum() or e.isspace())
     save(chunks, folder_name.strip())
     os.remove(path)
     return jsonify()
 
 def split_in_chunks(audio):
-    large_chunks = split_in_large_chunks(audio)
-    small_chunks = split_in_small_chunks(large_chunks)
-    best_size_chunks = join_really_small_chunks(small_chunks)
-    return best_size_chunks
-
-def split_in_large_chunks(audio):
-    return split_on_silence(audio, 
-        min_silence_len=400,
-        silence_thresh=-40
-    )
-
-def split_in_small_chunks(chunks):
-    result = []
-    for chunk in chunks:
-        if (chunk.duration_seconds >= CHUNK_MAX_DURATION_SEC):
-            new_chunks = split_on_silence(chunk, 
-                min_silence_len=150,
-                silence_thresh=-40
-            )
-            result = result + new_chunks
-        else:
-            result.append(chunk)
-
-    return result
-
-def join_really_small_chunks(chunks):
-    result = []
-    limit = len(chunks) - 1
-    i = 0
-    while (i <= limit):
-        if (i + 1 <= limit and should_combine(chunks[i], chunks[i + 1])):
-            result.append(chunks[i] + chunks[i + 1])
-            i += 2
-        else:
-            result.append(chunks[i])
-            i += 1
-
-    return result
-
-def should_combine(chunk1, chunk2):
-    total_sec = chunk1.duration_seconds + chunk2.duration_seconds
-    return total_sec <= CHUNK_MAX_DURATION_SEC
+    splitter = AudioSplitter(audio)
+    return 
 
 def save(audio_chunks, new_folder_name):
     for i, chunk in enumerate(audio_chunks):
