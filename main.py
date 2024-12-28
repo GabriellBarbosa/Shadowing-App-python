@@ -1,7 +1,5 @@
 from flask import Flask, jsonify, request
 from pydub import AudioSegment
-from pydub.silence import split_on_silence
-from pytubefix import YouTube
 from module_audio_splitter import AudioSplitter
 from module_yt_audio_downloader import YtAudioDownloader
 import os
@@ -13,7 +11,7 @@ HOST = '192.168.18.6'
 PORT = 5000
 
 @app.route('/yt', methods=['POST'])
-def upload_audio_from_yt():
+def create_chunks_from_youtube_video():
     ## download audio from YouTube
     audio_downloader = YtAudioDownloader(request.json['url'], './/temp')
     audio = audio_downloader.execute()
@@ -23,12 +21,12 @@ def upload_audio_from_yt():
     chunks = splitter.execute()
     
     ## save chunks and delete downloaded audio
-    save(chunks, audio_downloader.get_downloaded_audio_name())
+    save_chunks(chunks, audio_downloader.get_downloaded_audio_name())
     audio_downloader.delete_downloaded_audio()
 
     return jsonify()
 
-def save(audio_chunks, new_folder_name):
+def save_chunks(audio_chunks, new_folder_name):
     for i, chunk in enumerate(audio_chunks):
         out_path = f'.//static//audios//{new_folder_name}//original' 
         create_new_directory(out_path)
