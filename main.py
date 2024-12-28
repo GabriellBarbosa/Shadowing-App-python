@@ -2,7 +2,8 @@ from flask import Flask, jsonify, request
 from pydub import AudioSegment
 from pydub.silence import split_on_silence
 from pytubefix import YouTube
-from audio_splitter_module import AudioSplitter
+from module_audio_splitter import AudioSplitter
+from module_yt_audio_downloader import YtAudioDownloader
 import os
 import io
 import base64
@@ -11,31 +12,21 @@ app = Flask(__name__)
 HOST = '192.168.18.6'
 PORT = 5000
 
-user_data = "CgsyUHkwSWZQTHRsSSjfkJG7BjIKCgJCUhIEGgAgTQ%3D%3D"
-po_token = "MnTK9tGlwPKGdsrO5NQV4M-N48HTWklLmvpMvL5jGjA1amqO0Hep0ofXoH_Fm8Kzl8DwZyrkHWHl9OuG95_qxHGiie_6reqcVR5WI7o4Yw8K0mDnxhM_JCen6diO7u-q2ANAiv-CJD47061lwjvWn4eqWDSTbg=="
-
 @app.route('/yt', methods=['POST'])
 def upload_audio_from_yt():
-    yt = YouTube(
-        request.json['url'], 
-        use_po_token=True, 
-        po_token_verifier=(user_data, po_token))
-    ys = yt.streams.get_audio_only()
-    path = ys.download(output_path=".//temp")
-    audio = AudioSegment.from_file(path)
+    ## download audio from YouTube
+    audio_downloader = YtAudioDownloader(request.json['url'], './/temp')
+    audio = audio_downloader.execute()
 
     ## split audio in chunks
     splitter = AudioSplitter(audio)
     chunks = splitter.execute()
     
-    folder_name = ''.join(e for e in ys.title if e.isalnum() or e.isspace())
-    save(chunks, folder_name.strip())
-    os.remove(path)
-    return jsonify()
+    ## save chunks and delete downloaded audio
+    save(chunks, audio_downloader.get_downloaded_audio_name())
+    audio_downloader.delete_downloaded_audio()
 
-def split_in_chunks(audio):
-    splitter = AudioSplitter(audio)
-    return 
+    return jsonify()
 
 def save(audio_chunks, new_folder_name):
     for i, chunk in enumerate(audio_chunks):
