@@ -34,4 +34,5 @@ class YtAudioDownloader:
         return ''
 
     def delete_downloaded_audio(self):
-        os.remove(self._temp_audio_path)
+        if (self._temp_audio_path):
+            os.remove(self._temp_audio_path)
