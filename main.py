@@ -1,10 +1,8 @@
 from flask import Flask, jsonify, request
-from pydub import AudioSegment
 from module_audio_splitter import AudioSplitter
 from module_yt_audio_downloader import YtAudioDownloader
+from module_chunks_handler import ChunksHandler
 import os
-import io
-import base64
 
 app = Flask(__name__)
 HOST = '192.168.18.6'
@@ -21,45 +19,17 @@ def create_chunks_from_youtube_video():
     chunks = splitter.execute()
     
     ## save chunks and delete downloaded audio
-    save_chunks(chunks, audio_downloader.get_downloaded_audio_name())
+    handler = ChunksHandler()
+    handler.save_chunks(chunks, audio_downloader.get_downloaded_audio_name())
     audio_downloader.delete_downloaded_audio()
 
     return jsonify()
 
-def save_chunks(audio_chunks, new_folder_name):
-    for i, chunk in enumerate(audio_chunks):
-        out_path = f'.//static//audios//{new_folder_name}//original' 
-        create_new_directory(out_path)
-        out_file = out_path + f'.//{i}.wav'
-        chunk.export(out_file, format='wav')
-
 @app.route('/upload_recording/<audio>', methods=['POST'])
 def upload_recording(audio):
-    out_path = f'static//audios//{audio}//recording'
-    create_new_directory(out_path)
-    blob = base64_to_blob(request.json['b64'])
-    audio = create_audio_from(blob)
-    save_recording(audio, out_path, request.args['chunk_name'])
+    handler = ChunksHandler()
+    handler.upload_recording(audio, request.json['b64'], request.args['chunk_name'])
     return jsonify()
-
-def base64_to_blob(b64_str):
-    sanitized_b64 = remove_file_type_from(b64_str)
-    encoded_b64 = sanitized_b64.encode()
-    return base64.decodebytes(encoded_b64)
-
-def remove_file_type_from(b64_str):
-    return b64_str.split(',')[1]
-
-def create_audio_from(blob):
-    return AudioSegment.from_file(io.BytesIO(blob))
-
-def save_recording(audio, out_path, chunk_name):
-    out_file = out_path + f'//{chunk_name}'
-    audio.export(out_file, format='wav')
-    
-def create_new_directory(path):
-    if not os.path.exists(path):
-        os.makedirs(path)
 
 @app.route('/audios', methods=['GET'])
 def get_audio_folders():
