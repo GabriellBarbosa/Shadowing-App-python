@@ -33,54 +33,18 @@ def upload_recording(audio):
 
 @app.route('/audios', methods=['GET'])
 def get_audio_folders():
-    return jsonify({ 'audios': list_dir_content('./static/audios') });
+    handler = ChunksHandler()
+    return jsonify({ 'audios': handler.get_audio_folders() })
 
 @app.route('/audio/<audio>', methods=['GET'])
 def get_original_URIs(audio):
-    result = [None] * total_original_chunks(audio)
-    chunks = list_dir_content(f'./static/audios/{audio}/original')
-    for chunk in chunks:
-        index = int(chunk.split('.')[0])
-        result[index] = get_original_chunk_path(audio, chunk)
-
-    return jsonify(result)
-
-def get_original_chunk_path(audio, chunk):
-    return {
-        'path': f'http://{HOST}:{PORT}/static/audios/{audio}/original/{chunk}',
-        'name': chunk
-    }
+    handler = ChunksHandler()
+    return jsonify(handler.get_original_URIs(audio, HOST, PORT))
 
 @app.route('/recording/<audio>', methods=['GET'])
 def get_recording_URIs(audio):
-    result = [None] * total_original_chunks(audio)
-    recordings = list_dir_content(f'./static/audios/{audio}/recording')
-    for rec in recordings:
-        index = int(rec.split('.')[0])
-        result[index] = get_recording_chunk_path(audio, rec)
-
-    return jsonify(result)
-
-def get_recording_chunk_path(audio, rec):
-    return {
-        'path': f'http://{HOST}:{PORT}/static/audios/{audio}/recording/{rec}',
-        'name': rec
-    }
-    
-def total_original_chunks(audio):
-    chunk_numbers = []
-    chunks = list_dir_content(f'./static/audios/{audio}/original')
-    for c in chunks:
-        c_number = int(c.split('.')[0])
-        chunk_numbers.append(c_number)
-
-    return max(chunk_numbers) + 1
-
-def list_dir_content(path):
-    try:
-        return os.listdir(path)
-    except:
-        return []
+    handler = ChunksHandler()
+    return jsonify(handler.get_recording_URIs(audio, HOST, PORT))
 
 if __name__ == '__main__':
     app.run(host=HOST, port=PORT, debug=True)
