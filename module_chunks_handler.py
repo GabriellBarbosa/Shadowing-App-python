@@ -4,12 +4,12 @@ import io
 import base64
 
 class ChunksHandler:
-    def save_chunks(self, audio_chunks, new_folder_name):
-        for i, chunk in enumerate(audio_chunks):
-            out_path = f'.//static//audios//{new_folder_name}//original'
+    def save_chunks(self, video_clips, new_folder_name):
+        for i, clip in enumerate(video_clips):
+            out_path = f'.//static//audios//{new_folder_name}//original//'
             self._create_new_directory(out_path)
-            out_file = out_path + f'.//{i}.wav'
-            chunk.export(out_file, format='wav')
+            filename = f"chunk_{i}.mp4"
+            clip.write_videofile(out_path + filename, codec="libx264")
 
     def upload_recording(self, audio, b64, chunk_name):
         out_path = f'static//audios//{audio}//recording'

@@ -2,7 +2,6 @@ from flask import Flask, jsonify, request
 from module_audio_splitter import AudioSplitter
 from module_yt_audio_downloader import YtAudioDownloader
 from module_chunks_handler import ChunksHandler
-import os
 
 app = Flask(__name__)
 HOST = '192.168.18.6'
@@ -11,17 +10,35 @@ PORT = 5000
 @app.route('/yt', methods=['POST'])
 def create_chunks_from_youtube_video():
     ## download audio from YouTube
-    audio_downloader = YtAudioDownloader(request.json['url'], './/temp')
-    audio = audio_downloader.execute()
+    downloader = YtAudioDownloader('https://youtu.be/6qmaOIhqG5Y?feature=shared', './/temp')
+    content = downloader.execute()
 
     ## split audio in chunks
-    splitter = AudioSplitter(audio)
+    splitter = AudioSplitter(content['audio'])
     chunks = splitter.execute()
+
+    ## calculate start/end times of chunks
+    times = []
+    start = 0
+    for chunk in chunks:
+        end = start + len(chunk)
+        times.append((start, end))
+        start = end
+
+    ## cut video based on times
+    video_clips = []
+    for (start_ms, end_ms) in times:
+        start_s = start_ms / 1000
+        end_s = end_ms / 1000
+        clip = content['video'].subclipped(start_s, end_s)
+        video_clips.append(clip)
+    
+    print(f"Video clips created: {len(video_clips)}")
     
     ## save chunks and delete downloaded audio
     handler = ChunksHandler()
-    handler.save_chunks(chunks, audio_downloader.get_downloaded_audio_name())
-    audio_downloader.delete_downloaded_audio()
+    handler.save_chunks(video_clips, downloader.get_downloaded_audio_name())
+    downloader.delete_downloaded_audio()
 
     return jsonify()
 

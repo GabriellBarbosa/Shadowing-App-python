@@ -19,7 +19,7 @@ class AudioSplitter:
         result = []
         for chunk in chunks:
             if (chunk.duration_seconds >= self._CHUNK_MAX_DURATION_SEC):
-                new_chunks = split_on_silence(chunk, min_silence_len=250, silence_thresh=-30)
+                new_chunks = split_on_silence(chunk, min_silence_len=300, silence_thresh=-30)
                 result = result + new_chunks
             else:
                 result.append(chunk)
