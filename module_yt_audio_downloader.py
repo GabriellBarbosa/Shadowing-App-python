@@ -4,7 +4,7 @@ from pathlib import Path
 from moviepy import VideoFileClip
 import os
 
-# rename this class to be more descriptive
+## rename this class to be more descriptive
 class YtAudioDownloader:
     _user_data = "CgsyUHkwSWZQTHRsSSjfkJG7BjIKCgJCUhIEGgAgTQ%3D%3D"
     _po_token = "MnTK9tGlwPKGdsrO5NQV4M-N48HTWklLmvpMvL5jGjA1amqO0Hep0ofXoH_Fm8Kzl8DwZyrkHWHl9OuG95_qxHGiie_6reqcVR5WI7o4Yw8K0mDnxhM_JCen6diO7u-q2ANAiv-CJD47061lwjvWn4eqWDSTbg=="
@@ -21,7 +21,7 @@ class YtAudioDownloader:
         audio = AudioSegment.from_file(self._temp_audio_path)
         video = VideoFileClip(self._temp_video_path)
 
-        return { 'audio': audio, 'video': video, 'audio_path': self._temp_audio_path }
+        return { 'audio': audio, 'video': video }
         
     def _download(self):
         yt = YouTube(

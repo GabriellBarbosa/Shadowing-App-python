@@ -10,7 +10,7 @@ PORT = 5000
 @app.route('/yt', methods=['POST'])
 def create_chunks_from_youtube_video():
     ## download audio from YouTube
-    downloader = YtAudioDownloader('https://youtu.be/6qmaOIhqG5Y?feature=shared', './/temp')
+    downloader = YtAudioDownloader(request.json['url'], './/temp')
     content = downloader.execute()
 
     ## split audio in chunks
