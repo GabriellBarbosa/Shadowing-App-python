@@ -6,7 +6,7 @@ from flask_cors import CORS
 
 app = Flask(__name__)
 CORS(app)
-HOST = "192.168.15.133"
+HOST = "192.168.18.6"
 PORT = 5000
 
 
